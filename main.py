@@ -57,22 +57,18 @@ class Neuron:
         return sorted_neurons
 
 
-s1 = Neuron('S1', NeuronType.SENSORY)
-s2 = Neuron('S2', NeuronType.SENSORY)
 
 i1 = Neuron('I1', NeuronType.INTERNAL)
 i2 = Neuron('I2', NeuronType.INTERNAL)
 i3 = Neuron('I3', NeuronType.INTERNAL)
+i4 = Neuron('I4', NeuronType.INTERNAL)
 
-a1 = Neuron('A1', NeuronType.ACTION)
+neurons: List[Neuron] = [i1, i2, i3, i4]
 
-neurons: List[Neuron] = [s1, s2, i1, i2, i3, a1]
-
-Neuron.connect_neurons(s1, i1)
-Neuron.connect_neurons(s2, i1)
-Neuron.connect_neurons(i1, i3)
-Neuron.connect_neurons(i3, i2)
-Neuron.connect_neurons(i2, a1)
+Neuron.connect_neurons(i1, i2)
+Neuron.connect_neurons(i2, i3)
+Neuron.connect_neurons(i3, i4)
+Neuron.connect_neurons(i4, i1)
 
 sorted_neurons = Neuron.sort(neurons)
 
