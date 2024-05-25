@@ -78,7 +78,8 @@ def main() -> None:
     print(g.conn_weight)
 
     g.flip_random_bit()
-
+ 
+ 
     print(g.gene)
     print(g.conn_tip_neuron_type)
     print(g.conn_tip_neuron_id)
