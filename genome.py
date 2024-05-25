@@ -1,3 +1,4 @@
+import random
 from gene import Gene
 
 
@@ -18,6 +19,9 @@ class Genome:
     
     def __iter__(self):
         return iter(self.genes)
+    
+    def mutate(self) -> None:
+        random.choice(self.genes).flip_random_bit()
     
     
     

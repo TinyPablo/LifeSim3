@@ -50,6 +50,8 @@ class Neuron:
             
             neuron_output: float = tanh(input_neurons_sum)
 
+            neuron_action = None
+            
             if neuron_output > 0:
                 neuron_action = self.output_func_a
             elif self.output_func_b is not None:

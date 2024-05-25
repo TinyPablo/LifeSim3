@@ -40,7 +40,7 @@ class Gene:
     @property
     def conn_tip_neuron_type(self) -> ConnectionTipType:
         if (self.gene >> 31) & 1:
-            return ConnectionTipType.SENSORY
+            return ConnectionTipType.INPUT
         return ConnectionTipType.INTERNAL
     
     @property
@@ -50,7 +50,7 @@ class Gene:
     @property
     def conn_end_neuron_type(self) -> ConnectionEndType:
         if (self.gene >> 23) & 1:
-            return ConnectionEndType.ACTION
+            return ConnectionEndType.OUTPUT
         return ConnectionEndType.INTERNAL
     
     @property
@@ -62,8 +62,22 @@ class Gene:
         n: int = self.gene & 0xFFFF
         return n / 8192 - 4
     
+    def flip_random_bit(self) -> None:
+        bit_position = random.randint(0, 31)
+        mask = 1 << bit_position
+        self.gene ^= mask
+    
 def main() -> None:
     g: Gene = Gene()
+
+    print(g.gene)
+    print(g.conn_tip_neuron_type)
+    print(g.conn_tip_neuron_id)
+    print(g.conn_end_neuron_type)
+    print(g.conn_end_neuron_id)
+    print(g.conn_weight)
+
+    g.flip_random_bit()
 
     print(g.gene)
     print(g.conn_tip_neuron_type)
