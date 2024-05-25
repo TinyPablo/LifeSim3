@@ -21,7 +21,7 @@ class Neuron:
         self.input_neurons: List['Neuron'] = []
         self.output_neurons: List['Neuron'] = []
 
-        self.weight: float = None
+        self.weights: Dict['Neuron', float] = {}
         self.output: float = None 
 
     def __str__(self) -> str:
@@ -36,42 +36,42 @@ class Neuron:
         if self.type == NeuronType.INPUT:
             neuron_output = self.input_func()
             self.output = neuron_output
-            print(self, self.output)
 
 
         elif self.type == NeuronType.INTERNAL:
-            input_neurons_sum: float = sum([input_neuron.output * input_neuron.weight for input_neuron in self.input_neurons])
-            print([(input_neuron.output, input_neuron.weight) for input_neuron in self.input_neurons])
-            print(f'{input_neurons_sum = }')
+            input_neurons_sum: float = sum([input_neuron.output * input_neuron.weights[self] for input_neuron in self.input_neurons])
+
             neuron_output = tanh(input_neurons_sum)
             self.output = neuron_output
-            print(f'{tanh(input_neurons_sum) = }')
-            print(self, neuron_output)
             
 
         elif self.type == NeuronType.OUTPUT:
-            input_neurons_sum: float = sum([input_neuron.output * input_neuron.weight for input_neuron in self.input_neurons])
-            print([(input_neuron.output, input_neuron.weight) for input_neuron in self.input_neurons])
-            print(f'{input_neurons_sum = }')
-            neuron_output = tanh(input_neurons_sum)
-            print(f'{tanh(input_neurons_sum) = }')
-            print(self, neuron_output)
+            input_neurons_sum: float = sum([input_neuron.output * input_neuron.weights[self] for input_neuron in self.input_neurons])
+            
+            neuron_output: float = tanh(input_neurons_sum)
 
             if neuron_output > 0:
-                self.output_func_a()
+                neuron_action = self.output_func_a
             elif self.output_func_b is not None:
-                self.output_func_b()
+                neuron_action = self.output_func_b
 
+            action_chance = abs(neuron_output)
+
+            return neuron_action, action_chance
     @staticmethod
     def connect_neurons(input_neuron: 'Neuron', output_neuron: 'Neuron', connection_weight: float) -> None:
         if input_neuron.type == NeuronType.OUTPUT:
             raise ValueError("INPUT neuron cannot be OUTPUT NEURON")
+        
         if output_neuron.type == NeuronType.INPUT:
             raise ValueError("OUTPUT neuron cannot be INPUT NEURON")
+        
         if input_neuron == output_neuron:
             raise ValueError("INPUT NEURON cannot be OUTPUT NEURON")
+        
         if output_neuron in input_neuron.input_neurons or input_neuron in output_neuron.output_neurons:
             raise ValueError("Reverse connection is not allowed")
+        
         if output_neuron in input_neuron.output_neurons or input_neuron in output_neuron.input_neurons:
             raise ValueError("Connection duplicate not allowed")
 
@@ -83,7 +83,7 @@ class Neuron:
             output_neuron.input_neurons.remove(input_neuron)
             raise ValueError("Adding this connection creates a cycle")
         
-        input_neuron.weight = connection_weight 
+        input_neuron.weights[output_neuron] = connection_weight 
 
     @staticmethod
     def detect_cycle(start: 'Neuron') -> bool:
