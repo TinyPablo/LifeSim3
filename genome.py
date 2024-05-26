@@ -27,7 +27,7 @@ class Genome:
     
 
 def main() -> None:
-    g: Genome = Genome(4)
+    g: Genome = Genome(400000)
     print(g)
 
 if __name__ == '__main__':
