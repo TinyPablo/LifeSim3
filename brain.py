@@ -1,19 +1,29 @@
-from typing import Callable, List
+from typing import Callable, List, TYPE_CHECKING
 from connection import ConnectionEndType, ConnectionTipType
 from gene import Gene
 from genome import Genome
-import random
-
 from neuron import Neuron
 from neuron_type import NeuronType
+from input_neurons import get_fresh_input_neurons
+from output_neurons import get_fresh_output_neurons
+from internal_neurons import get_fresh_internal_neurons
 
+if TYPE_CHECKING:
+    from entity import Entity
 
 class Brain:
-    def __init__(self, genome: Genome, input_neurons: list[Neuron], output_neurons: list[Neuron], internal_neurons: list[Neuron]) -> None:
+    def __init__(self, genome: Genome, entity: 'Entity') -> None:
         self.genome: Genome = genome
-        self.input_neurons: list[Neuron] = input_neurons
-        self.output_neurons: list[Neuron] = output_neurons
-        self.internal_neurons: list[Neuron] = internal_neurons
+        self.entity: 'Entity' = entity
+
+        self.input_neurons: list[Neuron] = []
+        self.output_neurons: list[Neuron] = []
+        self.internal_neurons: list[Neuron] = []
+
+    def load_fresh_neurons(self) -> None:
+        self.input_neurons = get_fresh_input_neurons() 
+        self.output_neurons = get_fresh_output_neurons()
+        self.internal_neurons = get_fresh_internal_neurons()
 
     def connect_neurons(self) -> None:
         genes: List[Gene] = self.genome.genes
@@ -45,10 +55,9 @@ class Brain:
                 pass
 
     def process_brain(self) -> None:
-
-        neurons: Neuron = self.input_neurons + self.output_neurons + self.internal_neurons
-        neurons: Neuron = Neuron.sort(neurons)
-        neurons: Neuron = Neuron.filter(neurons)
+        neurons: List[Neuron] = self.input_neurons + self.output_neurons + self.internal_neurons
+        neurons: List[Neuron] = Neuron.sort(neurons)
+        neurons: List[Neuron] = Neuron.filter(neurons)
 
         final_action: Callable = None
         final_action_chance: float = float('-inf')
@@ -63,11 +72,12 @@ class Brain:
                 n.execute()
                 
         if final_action is not None:
-            final_action()
+            final_action(self.entity)
+
+    def init_and_process(self) -> None:
+        self.load_fresh_neurons()
+        self.connect_neurons()
+        self.process_brain()
     
     def mutate(self) -> None:
         self.genome.mutate()
-
-
-
-

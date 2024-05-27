@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import List
 from neuron import Neuron
 from neuron_type import NeuronType
@@ -25,3 +26,7 @@ input_neurons.append(Neuron('DTW', NeuronType.INPUT, input_func=get_distance_to_
 def get_age():
     return .2
 input_neurons.append(Neuron('AGE', NeuronType.INPUT, input_func=get_age))
+
+
+def get_fresh_input_neurons() -> List[Neuron]:
+    return deepcopy(input_neurons)

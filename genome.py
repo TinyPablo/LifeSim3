@@ -3,7 +3,7 @@ from gene import Gene
 
 
 class Genome:
-    def __init__(self, size: int, genes: list[Gene] = None) -> None:
+    def __init__(self, size: int = None, genes: list[Gene] = None) -> None:
         self.genes: list[Gene] = None
         self.size: int = size
         if genes is None:
@@ -21,14 +21,31 @@ class Genome:
         return iter(self.genes)
     
     def mutate(self) -> None:
-        random.choice(self.genes).flip_random_bit()
-    
-    
-    
+        random_gene = random.choice(self.genes)
+        random_gene.flip_random_bit()
+
+    def crossover(genome_a: 'Genome', genome_b: 'Genome') -> 'Genome':
+        half_len_a = len(genome_a.genes) // 2
+        half_len_b = len(genome_b.genes) // 2
+
+        use_first_half_a = bool(random.randint(0, 1))
+        use_first_half_b = bool(random.randint(0, 1))
+
+        half_a = genome_a.genes[:half_len_a] if use_first_half_a else genome_a.genes[half_len_a:]
+        half_b = genome_b.genes[:half_len_b] if use_first_half_b else genome_b.genes[half_len_b:]
+
+        return Genome(genes=half_a + half_b)
+
 
 def main() -> None:
-    g: Genome = Genome(400000)
-    print(g)
+    from genome import Genome
+    g1, g2 = Genome(2), Genome(2)
+    print(g1, '\n')
+    print(g2, '\n')
+
+    g3 = Genome.crossover(g1, g2)
+    print(g3, '\n')
+
 
 if __name__ == '__main__':
-    main() 
+    main()
