@@ -1,4 +1,5 @@
-from typing import Callable, List, TYPE_CHECKING
+import time
+from typing import Callable, List, TYPE_CHECKING, Optional
 from connection import ConnectionEndType, ConnectionTipType
 from gene import Gene
 from genome import Genome
@@ -16,21 +17,22 @@ class Brain:
         self.genome: Genome = genome
         self.entity: 'Entity' = entity
 
-        self.input_neurons: list[Neuron] = []
-        self.output_neurons: list[Neuron] = []
-        self.internal_neurons: list[Neuron] = []
+        self.input_neurons: list[Neuron] = get_fresh_input_neurons()
+        self.output_neurons: list[Neuron] = get_fresh_output_neurons()
+        self.internal_neurons: list[Neuron] = get_fresh_internal_neurons()
 
-    def load_fresh_neurons(self) -> None:
-        self.input_neurons = get_fresh_input_neurons() 
-        self.output_neurons = get_fresh_output_neurons()
-        self.internal_neurons = get_fresh_internal_neurons()
+    def refresh_neurons(self) -> None:
+        for neuron in self.input_neurons + self.output_neurons + self.internal_neurons:
+            neuron.refresh()
 
     def connect_neurons(self) -> None:
+        if self.genome.genes is None:
+            raise Exception('Genes is None')
         genes: List[Gene] = self.genome.genes
 
         for gene in genes:
-            input_neuron_list: List[Gene] = None
-            output_neuron_list: List[Gene] = None
+            input_neuron_list: Optional[List[Neuron]] = None
+            output_neuron_list: Optional[List[Neuron]] = None
 
             if gene.conn_tip_neuron_type == ConnectionTipType.INPUT:
                 input_neuron_list = self.input_neurons
@@ -56,13 +58,16 @@ class Brain:
 
     def process_brain(self) -> None:
         neurons: List[Neuron] = self.input_neurons + self.output_neurons + self.internal_neurons
-        neurons: List[Neuron] = Neuron.sort(neurons)
-        neurons: List[Neuron] = Neuron.filter(neurons)
+        neurons = Neuron.sort(neurons)
+        Neuron.filter(neurons)
 
-        final_action: Callable = None
+        final_action: Optional[Callable] = None
         final_action_chance: float = float('-inf')
 
         for n in neurons:
+            if n.disabled:
+                continue
+
             if n.type == NeuronType.INPUT:
                 n.execute(self.entity)
 
@@ -79,7 +84,8 @@ class Brain:
             final_action(self.entity)
 
     def init_and_process(self) -> None:
-        self.load_fresh_neurons()
+
+        self.refresh_neurons()
         self.connect_neurons()
         self.process_brain()
     

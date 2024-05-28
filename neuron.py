@@ -1,29 +1,41 @@
 import copy
 from math import tanh
-from typing import Callable, Dict, List, Optional, Set
+from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 from entity import Entity
 from neuron_type import NeuronType
 
 
 class Neuron:
-    def __init__(self, name: str, type: NeuronType, *, input_func: Callable = None, output_func_a: Callable = None, output_func_b: Callable = None) -> None:
+    def __init__(self, name: str, type: NeuronType, *, input_func: Optional[Callable] = None, output_func_a: Optional[Callable] = None, output_func_b: Optional[Callable] = None) -> None:
         self.name: str = name
         self.type: NeuronType = type
         
         if self.type == NeuronType.INPUT and input_func is None:
             raise TypeError('INPUT NEURON requires input function')
-        self.input_func: Callable = input_func
+        self.input_func: Optional[Callable] = input_func
         
         if self.type == NeuronType.OUTPUT and output_func_a is None:
             raise TypeError('OUTPUT NEURON requires output function a')
-        self.output_func_a: Callable = output_func_a
-        self.output_func_b: Callable = output_func_b
+        self.output_func_a: Optional[Callable] = output_func_a
+        self.output_func_b: Optional[Callable] = output_func_b
 
         self.input_neurons: List['Neuron'] = []
         self.output_neurons: List['Neuron'] = []
 
         self.weights: Dict['Neuron', float] = {}
-        self.output: float = None 
+        self.output: Optional[float] = None 
+        self.disabled: bool = False
+
+    def refresh(self) -> None:
+        self.input_neurons = []
+        self.output_neurons = []
+
+        self.weights = {}
+        self.output = None
+        self.disabled = False
+
+    def disable(self) -> None:
+        self.disabled = True
 
     def __str__(self) -> str:
         input_names: List[str] = [neuron.name for neuron in self.input_neurons]
@@ -33,23 +45,33 @@ class Neuron:
     def __repr__(self) -> str:
         return self.__str__()
     
-    def execute(self, entity: Optional[Entity] = None) -> None:
+    def execute(self, entity: Optional[Entity] = None) -> Tuple[Callable | None, float]:
         if self.type == NeuronType.INPUT:
+            if self.input_func is None:
+                raise Exception('None excaption')
             neuron_output = self.input_func(entity)
             self.output = neuron_output
 
 
         elif self.type == NeuronType.INTERNAL:
-            input_neurons_sum: float = sum([input_neuron.output * input_neuron.weights[self] for input_neuron in self.input_neurons])
+            input_neurons_sum: Union[float, int] = 0
+            for input_neuron in self.input_neurons:
+                # if input_neuron.output is None:
+                #     raise Exception('None exception')
+                input_neurons_sum += input_neuron.output * input_neuron.weights[self]
 
             neuron_output = tanh(input_neurons_sum)
             self.output = neuron_output
             
 
         elif self.type == NeuronType.OUTPUT:
-            input_neurons_sum: float = sum([input_neuron.output * input_neuron.weights[self] for input_neuron in self.input_neurons])
+            input_neurons_sum = 0
+            for input_neuron in self.input_neurons:
+                if input_neuron.output is None:
+                    raise Exception('None exception')
+                input_neurons_sum += input_neuron.output * input_neuron.weights[self]
             
-            neuron_output: float = tanh(input_neurons_sum)
+            neuron_output = tanh(input_neurons_sum)
 
             neuron_action = None
             
@@ -58,9 +80,11 @@ class Neuron:
             elif self.output_func_b is not None:
                 neuron_action = self.output_func_b
 
-            action_chance = abs(neuron_output)
+            action_chance: float = abs(neuron_output)
 
             return neuron_action, action_chance
+        return lambda: None, 0.0
+    
     @staticmethod
     def connect_neurons(input_neuron: 'Neuron', output_neuron: 'Neuron', connection_weight: float) -> None:
         if input_neuron.type == NeuronType.OUTPUT:
@@ -110,32 +134,33 @@ class Neuron:
 
     @staticmethod
     def sort(neurons: List['Neuron']) -> List['Neuron']:
-        neurons_copy = copy.deepcopy(neurons)
-        
+        input_counts = {neuron: len(neuron.input_neurons) for neuron in neurons}
+
         sorted_neurons: List['Neuron'] = []
-        no_incoming: List['Neuron'] = [n for n in neurons_copy if len(n.input_neurons) == 0]
+        no_incoming: List['Neuron'] = [n for n in neurons if input_counts[n] == 0]
 
         while no_incoming:
             n: Neuron = no_incoming.pop()
             sorted_neurons.append(n)
 
             for m in n.output_neurons:
-                m.input_neurons.remove(n)
-                if len(m.input_neurons) == 0:
+                input_counts[m] -= 1
+                if input_counts[m] == 0:
                     no_incoming.append(m)
 
-        if len(sorted_neurons) != len(neurons_copy):
+        if len(sorted_neurons) != len(neurons):
             raise ValueError("Graph has at least one cycle, sorting is not possible")
-        
+
         sorted_map = {neuron.name: index for index, neuron in enumerate(sorted_neurons)}
-        
         neurons.sort(key=lambda neuron: sorted_map.get(neuron.name, float('inf')))
-        
+
         return neurons
     
     @staticmethod
-    def filter(neurons: List['Neuron']) -> List['Neuron']:
-        return [n for n in neurons if n.input_neurons or n.output_neurons]
+    def filter(neurons: List['Neuron']) -> None:
+        for neuron in neurons:
+            if not (neuron.input_neurons or neuron.output_neurons):
+                neuron.disable()
     
     @staticmethod
     def create_neurons(num_input: int, num_internal: int, num_output: int) -> List['Neuron']:

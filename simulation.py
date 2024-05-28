@@ -1,5 +1,6 @@
 import random
-from typing import List
+import time
+from typing import List, Optional, Union
 from genome import Genome
 from simulation_settings import settings
 from grid import Grid
@@ -14,7 +15,7 @@ class Simulation:
         self.entities: List[Entity] = []
         self.simulation_ended: bool = False
 
-        self.survival_rate: int = None
+        self.survival_rate: Optional[float] = None
 
     def on_generation_end(self) -> None:
         self.do_natural_selection()
@@ -25,24 +26,31 @@ class Simulation:
     def print_info(self) -> None:
         gen: int = self.current_generation
         step: int = self.current_step
-        sr: float = round(self.survival_rate if self.survival_rate is not None else 0, 2)
+        sr: Union[int, float] = round(self.survival_rate if self.survival_rate is not None else 0, 2)
         safe: float = len([e for e in self.entities if self.selection_condition(e)]) / len(self.entities) * 100
         safe = round(safe if safe is not None else 0, 2)
         
         print(f'\rGEN: {gen} | STEP: {step} | SAFE: {safe}% | SR: {sr}%' \
                   , end='', flush=True)
 
+
+
     def generation_loop(self) -> None:
         self.current_step = 1
         while settings.steps_per_generation >= self.current_step and not self.simulation_ended:
+
             self.print_info()
+            
             for entity in self.entities:
                 entity.brain.init_and_process()
 
             self.grid.render(self.current_generation, self.current_step)
             self.current_step += 1
 
+    
         self.on_generation_end()
+
+
 
     def simulation_loop(self) -> None:
         self.current_generation = 1
@@ -56,26 +64,20 @@ class Simulation:
 
     def populate(self) -> None:
         self.entities = [Entity(Genome(settings.brain_size)) for _ in range(settings.max_entity_count)]
-
         for entity in self.entities:
             self.grid.deploy_entity_randomly(entity)
 
     def start(self) -> None:
         self.populate()
+
         self.simulation_loop()
 
-    # def selection_condition(self, entity: Entity) -> bool:
-    #     x: int = entity.transform.position_x
-    #     y: int = entity.transform.position_y
-    #     return \
-    #         (settings.grid_width * .4) < x < (settings.grid_width * .6) and \
-    #         (settings.grid_height * .4) < y < (settings.grid_height * .6)
     
     def selection_condition(self, entity: Entity) -> bool:
         x: int = entity.transform.position_x
         y: int = entity.transform.position_y
         return \
-            (settings.grid_width * .5) < x
+            x > (settings.grid_width - (settings.grid_width // 4))
 
     def do_natural_selection(self) -> None:
         for entity in self.entities:

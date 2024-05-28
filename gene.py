@@ -1,11 +1,11 @@
 import random
-from typing import Self
+from typing import Optional, Self
 from connection import ConnectionTipType, ConnectionEndType
 
 
 class Gene:
-    def __init__(self, gene: int = None) -> None:
-        self._gene: int = None
+    def __init__(self, gene: Optional[int] = None) -> None:
+        self._gene: Optional[int] = None
         if gene is None:
             self.randomize()
         else:
@@ -13,11 +13,13 @@ class Gene:
 
     @property
     def gene(self) -> int:
+        if self._gene is None:
+            raise Exception('Gene is None')
         return self._gene & 0xFFFF_FFFF
     
     @gene.setter
     def gene(self, value: int) -> None:
-        self._gene: int = value
+        self._gene = value
 
     def randomize(self) -> None:
         self.gene: int = random.randint(0, 0xFFFF_FFFF)

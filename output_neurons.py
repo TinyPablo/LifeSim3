@@ -6,53 +6,76 @@ from neuron import Neuron
 from neuron_type import NeuronType
 
 
-def move_north(entity: 'Entity'):
-    entity.grid.move(entity, Direction.UP)
+output_neurons: List[Neuron] = []
 
-def move_north_east(entity: 'Entity'):
-    entity.grid.move(entity, Direction.UP_RIGHT)
-
-def move_east(entity: 'Entity'):
-    entity.grid.move(entity, Direction.RIGHT)
-
-def move_south_east(entity: 'Entity'):
-    entity.grid.move(entity, Direction.DOWN_RIGHT)
-
-def move_south(entity: 'Entity'):
-    entity.grid.move(entity, Direction.DOWN)
-
-def move_south_west(entity: 'Entity'):
-    entity.grid.move(entity, Direction.DOWN_LEFT)
-
-def move_west(entity: 'Entity'):
-    entity.grid.move(entity, Direction.LEFT)
-
-def move_north_west(entity: 'Entity'):
-    entity.grid.move(entity, Direction.UP_LEFT)
 
 def move_forward(entity: 'Entity'):
-    entity.grid.move(entity, entity.transform.direction)
+    grid = entity.grid
+    if grid is None:
+        raise Exception('Grid is None')
+    grid.move_relative(entity, Direction.UP)
+    
+def move_backwards(entity: 'Entity'):
+    grid = entity.grid
+    if grid is None:
+        raise Exception('Grid is None')
+    grid.move_relative(entity, Direction.DOWN)
+    
+output_neurons.append(Neuron('MUD', NeuronType.OUTPUT, output_func_a=move_forward, output_func_b=move_backwards))
+
+def move_right(entity: 'Entity'):
+    grid = entity.grid
+    if grid is None:
+        raise Exception('Grid is None')
+    grid.move_relative(entity, Direction.RIGHT)
+    
+def move_left(entity: 'Entity'):
+    grid = entity.grid
+    if grid is None:
+        raise Exception('Grid is None')
+    grid.move_relative(entity, Direction.LEFT)
+    
+output_neurons.append(Neuron('MRL', NeuronType.OUTPUT, output_func_a=move_right, output_func_b=move_left))
+
+def move_north(entity: 'Entity'):
+    grid = entity.grid
+    if grid is None:
+        raise Exception('Grid is None')
+    grid.move(entity, Direction.UP)
+    
+def move_south(entity: 'Entity'):
+    grid = entity.grid
+    if grid is None:
+        raise Exception('Grid is None')
+    grid.move(entity, Direction.DOWN)
+    
+output_neurons.append(Neuron('MNS', NeuronType.OUTPUT, output_func_a=move_north, output_func_b=move_south))
+
+def move_east(entity: 'Entity'):
+    grid = entity.grid
+    if grid is None:
+        raise Exception('Grid is None')
+    grid.move(entity, Direction.RIGHT)
+    
+def move_west(entity: 'Entity'):
+    grid = entity.grid
+    if grid is None:
+        raise Exception('Grid is None')
+    grid.move(entity, Direction.LEFT)
+    
+output_neurons.append(Neuron('MEW', NeuronType.OUTPUT, output_func_a=move_east, output_func_b=move_west))
+
 
 def move_random(entity: 'Entity'):
-    entity.grid.move(entity, Direction.random())
+    grid = entity.grid
+    if grid is None:
+        raise Exception('Grid is None')
+    grid.move_relative(entity, Direction.random())
+output_neurons.append(Neuron('MRD', NeuronType.OUTPUT, output_func_a=move_random))
 
 def stay_still(entity: 'Entity'):
     pass
-
-output_neurons: List[Neuron] = [
-    Neuron('MOVE NORTH', NeuronType.OUTPUT, output_func_a=move_north),
-    Neuron('MOVE NORTH-EAST', NeuronType.OUTPUT, output_func_a=move_north_east),
-    Neuron('MOVE EAST', NeuronType.OUTPUT, output_func_a=move_east),
-    Neuron('MOVE SOUTH-EAST', NeuronType.OUTPUT, output_func_a=move_south_east),
-    Neuron('MOVE SOUTH', NeuronType.OUTPUT, output_func_a=move_south),
-    Neuron('MOVE SOUTH-WEST', NeuronType.OUTPUT, output_func_a=move_south_west),
-    Neuron('MOVE WEST', NeuronType.OUTPUT, output_func_a=move_west),
-    Neuron('MOVE NORTH-WEST', NeuronType.OUTPUT, output_func_a=move_north_west),
-    Neuron('MOVE FORWARD', NeuronType.OUTPUT, output_func_a=move_forward),
-    Neuron('MOVE RANDOM', NeuronType.OUTPUT, output_func_a=move_random),
-    Neuron('STAY STILL', NeuronType.OUTPUT, output_func_a=stay_still)
-]
-
+output_neurons.append(Neuron('STS', NeuronType.OUTPUT, output_func_a=stay_still))
 
 def get_fresh_output_neurons() -> List[Neuron]:
     return deepcopy(output_neurons)

@@ -28,33 +28,36 @@ class Entity:
     
     @property
     def age(self) -> float:
-        current_step = self.grid.simulation.current_step
-        return current_step / settings.steps_per_generation
+        if self.grid is None:
+            raise Exception('None error')
+        return self.grid.simulation.current_step / settings.steps_per_generation
     
     @property
-    def distance_to_north(self):
+    def distance_to_north(self) -> float:
         return self.transform.position_y / settings.grid_height
     
     @property
-    def distance_to_south(self):
+    def distance_to_south(self) -> float:
         return 1 - (self.transform.position_y / settings.grid_height)
     
     @property
-    def distance_to_east(self):
+    def distance_to_east(self) -> float:
         return self.transform.position_x / settings.grid_width
     
     @property
-    def distance_to_west(self):
+    def distance_to_west(self) -> float:
         return 1 - (self.transform.position_x / settings.grid_width)
 
     def die(self) -> None:
+        if self.grid is None:
+            raise Exception('None exception')
         self.grid.remove_entity(self.transform.position_x, self.transform.position_y)
         self.dead = True
 
-        self.transform: Transform = Transform()
+        self.transform = Transform()
         self.grid = None
 
-    def try_mutate(self, percent_chance: float) -> None:
+    def try_mutate(self, percent_chance: float) -> bool:
         if random.uniform(0.0, 100.0) < percent_chance:
             self.mutate()
             return True
