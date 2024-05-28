@@ -57,7 +57,6 @@ class Entity:
     def try_mutate(self, percent_chance: float) -> None:
         if random.uniform(0.0, 100.0) < percent_chance:
             self.mutate()
-            print('mutation occured')
             return True
         return False
 
