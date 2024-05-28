@@ -9,9 +9,6 @@ class Transform:
         self.direction: Direction = Direction.random()
 
     def __str__(self) -> str:
-        return \
-            f'x: {self.position_x}\n' \
-            f'y: {self.position_y}\n' \
-            f'x: {self.direction.name} {self.direction.value}'
+        return f'[x: {self.position_x} y: {self.position_y}] {self.direction.name}'
 
     

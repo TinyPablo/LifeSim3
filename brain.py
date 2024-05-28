@@ -63,12 +63,16 @@ class Brain:
         final_action_chance: float = float('-inf')
 
         for n in neurons:
-            if n.type == NeuronType.OUTPUT:
+            if n.type == NeuronType.INPUT:
+                n.execute(self.entity)
+
+            elif n.type == NeuronType.OUTPUT:
                 neuron_action, action_chance = n.execute()
                 if action_chance > final_action_chance and neuron_action is not None:
                     final_action = neuron_action
                     final_action_chance = action_chance
-            else:
+                    
+            elif n.type == NeuronType.INTERNAL:
                 n.execute()
                 
         if final_action is not None:

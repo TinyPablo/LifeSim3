@@ -1,5 +1,6 @@
 from copy import deepcopy
 from typing import List
+from direction import Direction
 from entity import Entity
 from neuron import Neuron
 from neuron_type import NeuronType
@@ -9,41 +10,54 @@ output_neurons: List[Neuron] = []
 
 
 def move_forward(entity: 'Entity'):
-    print(entity.x, entity.y)
-    return print('moved forward')
-output_neurons.append(Neuron('MFW', NeuronType.OUTPUT, output_func_a=move_forward))
-
-def move_up(entity: 'Entity'):
-    print(entity.x, entity.y)
-    return print('moved up')
-def move_down(entity: 'Entity'):
-    print(entity.x, entity.y)
-    return print('moved down')
-output_neurons.append(Neuron('MUD', NeuronType.OUTPUT, output_func_a=move_up, output_func_b=move_down))
+    grid = entity.grid
+    grid.move_entity_in_relative_direction(entity, Direction.UP)
+    
+def move_backwards(entity: 'Entity'):
+    grid = entity.grid
+    grid.move_entity_in_relative_direction(entity, Direction.DOWN)
+    
+output_neurons.append(Neuron('MUD', NeuronType.OUTPUT, output_func_a=move_forward, output_func_b=move_backwards))
 
 def move_right(entity: 'Entity'):
-    print(entity.x, entity.y)
-    return print('moved right')
+    grid = entity.grid
+    grid.move_entity_in_relative_direction(entity, Direction.RIGHT)
+    
 def move_left(entity: 'Entity'):
-    print(entity.x, entity.y)
-    return print('moved left')
+    grid = entity.grid
+    grid.move_entity_in_relative_direction(entity, Direction.LEFT)
+    
 output_neurons.append(Neuron('MRL', NeuronType.OUTPUT, output_func_a=move_right, output_func_b=move_left))
 
 def move_north(entity: 'Entity'):
-    print(entity.x, entity.y)
-    return print('moved north')
+    grid = entity.grid
+    grid.move_entity_in_direction(entity, Direction.UP)
+    
 def move_south(entity: 'Entity'):
-    print(entity.x, entity.y)
-    return print('moved south')
+    grid = entity.grid
+    grid.move_entity_in_direction(entity, Direction.DOWN)
+    
 output_neurons.append(Neuron('MNS', NeuronType.OUTPUT, output_func_a=move_north, output_func_b=move_south))
 
 def move_east(entity: 'Entity'):
-    print(entity.x, entity.y)
-    return print('moved east') 
+    grid = entity.grid
+    grid.move_entity_in_direction(entity, Direction.RIGHT)
+    
 def move_west(entity: 'Entity'):
-    print(entity.x, entity.y)
-    return print('moved west')
+    grid = entity.grid
+    grid.move_entity_in_direction(entity, Direction.LEFT)
+    
 output_neurons.append(Neuron('MEW', NeuronType.OUTPUT, output_func_a=move_east, output_func_b=move_west))
+
+
+def move_random(entity: 'Entity'):
+    grid = entity.grid
+    grid.move_entity_in_direction(entity, Direction.random())
+output_neurons.append(Neuron('MRD', NeuronType.OUTPUT, output_func_a=move_random))
+
+def stay_still(entity: 'Entity'):
+    pass
+output_neurons.append(Neuron('STS', NeuronType.OUTPUT, output_func_a=stay_still))
 
 def get_fresh_output_neurons() -> List[Neuron]:
     return deepcopy(output_neurons)

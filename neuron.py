@@ -1,6 +1,7 @@
 import copy
 from math import tanh
-from typing import Callable, Dict, List, Set
+from typing import Callable, Dict, List, Optional, Set
+from entity import Entity
 from neuron_type import NeuronType
 
 
@@ -32,9 +33,9 @@ class Neuron:
     def __repr__(self) -> str:
         return self.__str__()
     
-    def execute(self) -> None:
+    def execute(self, entity: Optional[Entity] = None) -> None:
         if self.type == NeuronType.INPUT:
-            neuron_output = self.input_func()
+            neuron_output = self.input_func(entity)
             self.output = neuron_output
 
 

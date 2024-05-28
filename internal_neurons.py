@@ -4,7 +4,7 @@ from neuron import Neuron
 from neuron_type import NeuronType
 from simulation_settings import settings
 
-internal_neurons: List[Neuron] = [Neuron(f'I{i+1}', NeuronType.INTERNAL) for i in range(settings.MAX_INTERNAL_NEURONS)]
+internal_neurons: List[Neuron] = [Neuron(f'I{i+1}', NeuronType.INTERNAL) for i in range(settings.max_internal_neurons)]
 
 def get_fresh_internal_neurons() -> List[Neuron]:
     return deepcopy(internal_neurons)
