@@ -27,10 +27,7 @@ class Neuron:
         self.disabled: bool = False
 
     def refresh(self) -> None:
-        self.input_neurons = []
-        self.output_neurons = []
 
-        self.weights = {}
         self.output = None
         self.disabled = False
 
@@ -41,9 +38,6 @@ class Neuron:
         input_names: List[str] = [neuron.name for neuron in self.input_neurons]
         output_names: List[str] = [neuron.name for neuron in self.output_neurons]
         return f'{self.name} {input_names} {output_names}'
-
-    def __repr__(self) -> str:
-        return self.__str__()
     
     def execute(self, entity: Optional[Entity] = None) -> Tuple[Callable | None, float]:
         if self.type == NeuronType.INPUT:
@@ -65,8 +59,6 @@ class Neuron:
         elif self.type == NeuronType.OUTPUT:
             input_neurons_sum = 0
             for input_neuron in self.input_neurons:
-                if input_neuron.output is None:
-                    raise Exception('None exception')
                 input_neurons_sum += input_neuron.output * input_neuron.weights[self]
             
             neuron_output = tanh(input_neurons_sum)

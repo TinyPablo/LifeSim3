@@ -51,8 +51,6 @@ class Entity:
 
 
     def die(self) -> None:
-        if self.grid is None:
-            raise Exception('None exception')
         self.grid.remove_entity(self.transform.position_x, self.transform.position_y)
         self.dead = True
 

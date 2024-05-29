@@ -83,9 +83,11 @@ class Brain:
         if final_action is not None:
             final_action(self.entity, self.entity.grid, self.entity.simulation)
 
-    def init_and_process(self) -> None:
-        self.refresh_neurons()
+    def init(self) -> None:
         self.connect_neurons()
+
+    def process(self) -> None:
+        self.refresh_neurons()
         self.process_brain()
     
     def mutate(self) -> None:

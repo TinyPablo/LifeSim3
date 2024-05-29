@@ -109,8 +109,8 @@ class Grid:
 
 
     def blockage_in_direction(self, entity: 'Entity', direction: Direction) -> float:
-        x: int = entity.transform.position_x + direction.value[0]
-        y: int = entity.transform.position_y + direction.value[1]
+        x: int = entity.transform.next_x
+        y: int = entity.transform.next_y
         return not self.in_boundaries(x, y) or self.grid[x][y].is_occupied
 
     

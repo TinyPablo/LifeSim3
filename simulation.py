@@ -30,8 +30,9 @@ class Simulation:
         self.rename_generation_dir()
 
     def rename_generation_dir(self) -> None:
-        os.rename(f'{settings.simulation_directory}/{settings.seed}/{self.current_generation}', \
-                  f'{settings.simulation_directory}/{settings.seed}/{self.current_generation}-{self.survival_rate}')
+        if self.render:
+            os.rename(f'{settings.simulation_directory}/{settings.seed}/{self.current_generation}', \
+            f'{settings.simulation_directory}/{settings.seed}/{self.current_generation}-{self.survival_rate}')
 
     def print_info(self) -> None:
         gen: int = self.current_generation
@@ -47,12 +48,15 @@ class Simulation:
     def generation_loop(self) -> None:
         self.current_step = 1
         
+        for entity in self.entities:
+            entity.brain.init()
+
         while settings.steps_per_generation >= self.current_step and not self.simulation_ended:
 
             self.print_info()
             
             for entity in self.entities:
-                entity.brain.init_and_process()
+                entity.brain.process()
 
             if self.render:
                 self.grid.render(self.current_generation, self.current_step)
@@ -102,7 +106,7 @@ class Simulation:
         # return ((settings.grid_width * 1/3) > x or x > (settings.grid_width * 2/3)) and \
         # ((settings.grid_height * 1/3) > y or y > (settings.grid_height * 2/3))
 
-        return settings.grid_height // 2 > y 
+        return settings.grid_height // 3 > y 
 
     def do_natural_selection(self) -> None:
         for entity in self.entities:
@@ -125,7 +129,6 @@ class Simulation:
             parent_a, parent_b = random.sample(parents, 2)
             child_genome: Genome = Genome.crossover(parent_a.brain.genome, parent_b.brain.genome)
             entity: Entity = Entity(child_genome, self, self.grid)
-            entity.simulation = self
 
             mutated = entity.try_mutate(settings.mutation_chance)
             

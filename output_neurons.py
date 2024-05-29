@@ -38,6 +38,13 @@ def move_random(entity: Entity, grid: Grid, simulation: Simulation):
 def stay_still(entity: Entity, grid: Grid, simulation: Simulation):
     pass
 
+def kill(entity: Entity, grid: Grid, simulation: Simulation):
+    x: int = entity.transform.next_x
+    y: int = entity.transform.next_y
+    if grid.in_boundaries(x, y):
+        if grid.grid[x][y].is_entity:
+            grid.grid[x][y].object.die()
+
 
 output_neurons: List[Neuron] = [
     Neuron('move vertically', NeuronType.OUTPUT, output_func_a=move_north, output_func_b=move_south),
@@ -47,6 +54,7 @@ output_neurons: List[Neuron] = [
     Neuron('move right-left', NeuronType.OUTPUT, output_func_a=move_right, output_func_b=move_left),
     Neuron('move random', NeuronType.OUTPUT, output_func_a=move_random),
     Neuron('stay still', NeuronType.OUTPUT, output_func_a=stay_still),
+    # Neuron('kill', NeuronType.OUTPUT, output_func_a=kill),
 ]
 
 def get_fresh_output_neurons() -> List[Neuron]:
