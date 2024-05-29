@@ -8,18 +8,18 @@ class SimulationSettings:
         self.grid_width = 64
         self.grid_height = 64
 
-        self.mutation_chance = .1  # %
+        self.mutation_chance = .1
 
         self.random_seed = True
-        self.seed = 514391182
+        self.seed = 2673244385
 
         self.steps_per_generation = 100
         self.max_generation_count = 1_000_000_000
 
-        self.max_entity_count = 750
+        self.max_entity_count = 1000
 
-        self.brain_size = 8
-        self.max_internal_neurons = 1
+        self.brain_size = 16
+        self.max_internal_neurons = 2
 
         self.initialize_seed()
         self.save_settings()

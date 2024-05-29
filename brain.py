@@ -58,7 +58,7 @@ class Brain:
 
     def process_brain(self) -> None:
         neurons: List[Neuron] = self.input_neurons + self.output_neurons + self.internal_neurons
-        neurons = Neuron.sort(neurons)
+        Neuron.sort(neurons)
         Neuron.filter(neurons)
 
         final_action: Optional[Callable] = None
@@ -81,10 +81,9 @@ class Brain:
                 n.execute()
                 
         if final_action is not None:
-            final_action(self.entity)
+            final_action(self.entity, self.entity.grid, self.entity.simulation)
 
     def init_and_process(self) -> None:
-
         self.refresh_neurons()
         self.connect_neurons()
         self.process_brain()

@@ -1,4 +1,7 @@
+import math
+import os
 import random
+import threading
 import time
 from typing import List, Optional, Union
 from genome import Genome
@@ -15,13 +18,20 @@ class Simulation:
         self.entities: List[Entity] = []
         self.simulation_ended: bool = False
 
-        self.survival_rate: Optional[float] = None
+        self.survival_rate: float = 0.0
+        self.mutations: int = 0
+        self.render: bool = True
 
     def on_generation_end(self) -> None:
         self.do_natural_selection()
         self.reproduce()
-        self.perform_mutations()
         self.place_new_generation_entities()
+        
+        self.rename_generation_dir()
+
+    def rename_generation_dir(self) -> None:
+        os.rename(f'{settings.simulation_directory}/{settings.seed}/{self.current_generation}', \
+                  f'{settings.simulation_directory}/{settings.seed}/{self.current_generation}-{self.survival_rate}')
 
     def print_info(self) -> None:
         gen: int = self.current_generation
@@ -29,14 +39,14 @@ class Simulation:
         sr: Union[int, float] = round(self.survival_rate if self.survival_rate is not None else 0, 2)
         safe: float = len([e for e in self.entities if self.selection_condition(e)]) / len(self.entities) * 100
         safe = round(safe if safe is not None else 0, 2)
+        mutations: int = self.mutations
         
-        print(f'\rGEN: {gen} | STEP: {step} | SAFE: {safe}% | SR: {sr}%' \
+        print(f'\rGEN: {gen}|STEP: {step}|SAFE: {safe}%|SR: {sr}%|MUT: {mutations}|REND: {self.render}' \
                   , end='', flush=True)
-
-
 
     def generation_loop(self) -> None:
         self.current_step = 1
+        
         while settings.steps_per_generation >= self.current_step and not self.simulation_ended:
 
             self.print_info()
@@ -44,13 +54,12 @@ class Simulation:
             for entity in self.entities:
                 entity.brain.init_and_process()
 
-            self.grid.render(self.current_generation, self.current_step)
+            if self.render:
+                self.grid.render(self.current_generation, self.current_step)
+                pass
             self.current_step += 1
-
     
         self.on_generation_end()
-
-
 
     def simulation_loop(self) -> None:
         self.current_generation = 1
@@ -63,11 +72,23 @@ class Simulation:
 
 
     def populate(self) -> None:
-        self.entities = [Entity(Genome(settings.brain_size)) for _ in range(settings.max_entity_count)]
+        self.entities = [Entity(Genome(settings.brain_size), self, self.grid) for _ in range(settings.max_entity_count)]
         for entity in self.entities:
             self.grid.deploy_entity_randomly(entity)
 
+    def prompt_manager(self) -> None:
+        def prompt_thread() -> None:
+            while True:
+                input()
+                self.render = not self.render
+
+        threading.Thread(target=prompt_thread).start()
+        
+
+        
+
     def start(self) -> None:
+        self.prompt_manager()
         self.populate()
 
         self.simulation_loop()
@@ -76,8 +97,12 @@ class Simulation:
     def selection_condition(self, entity: Entity) -> bool:
         x: int = entity.transform.position_x
         y: int = entity.transform.position_y
-        return \
-            x > (settings.grid_width - (settings.grid_width // 4))
+
+
+        # return ((settings.grid_width * 1/3) > x or x > (settings.grid_width * 2/3)) and \
+        # ((settings.grid_height * 1/3) > y or y > (settings.grid_height * 2/3))
+
+        return settings.grid_height // 2 > y 
 
     def do_natural_selection(self) -> None:
         for entity in self.entities:
@@ -86,7 +111,7 @@ class Simulation:
 
     def reproduce(self) -> None:
         parents: List[Entity] = [e for e in self.entities if not e.dead]
-
+        
         self.survival_rate = len(parents) / settings.max_entity_count * 100
 
         new_entities: List[Entity] = []
@@ -96,10 +121,17 @@ class Simulation:
             self.simulation_ended = True
             return
         
-        while len(new_entities) < settings.max_entity_count:
+        while len(new_entities) <= settings.max_entity_count:
             parent_a, parent_b = random.sample(parents, 2)
             child_genome: Genome = Genome.crossover(parent_a.brain.genome, parent_b.brain.genome)
-            entity: Entity = Entity(child_genome)
+            entity: Entity = Entity(child_genome, self, self.grid)
+            entity.simulation = self
+
+            mutated = entity.try_mutate(settings.mutation_chance)
+            
+            if mutated:
+                self.mutations += 1
+
             new_entities.append(entity)
 
         self.entities = new_entities
@@ -110,10 +142,6 @@ class Simulation:
     def place_new_generation_entities(self) -> None:
         for entity in self.entities:
             self.grid.deploy_entity_randomly(entity)
-
-    def perform_mutations(self) -> None:
-        for entity in self.entities:
-            entity.try_mutate(settings.mutation_chance)
 
     
 

@@ -1,6 +1,6 @@
 import os
 import random
-from typing import Optional, List, TYPE_CHECKING, Tuple
+from typing import Optional, List, TYPE_CHECKING
 from cell import Cell
 from direction import Direction
 from simulation_settings import settings
@@ -83,7 +83,7 @@ class Grid:
             for x in range(self.width):
                 cell = self.grid[x][y]
                 if cell.is_entity:
-                    pixels[x, y] = (0, 0, 255)
+                    pixels[x, y] = cell.object.color
                 elif not cell.is_occupied:
                     pixels[x, y] = (255, 255, 255)
         
@@ -99,23 +99,19 @@ class Grid:
             entity.set_position(new_x, new_y)
             entity.transform.direction = absolute_direction if absolute_direction is not None else direction
 
+    def move_relative(self, entity: 'Entity', direction: Direction) -> None:
+        current_direction = entity.transform.direction
+        relative_direction = self.get_relative_direction(current_direction, direction)
+        self.move(entity, direction, relative_direction)
+
     def in_boundaries(self, x: int, y: int) -> bool:
         return 0 <= x < self.width and 0 <= y < self.height
+
 
     def blockage_in_direction(self, entity: 'Entity', direction: Direction) -> float:
         x: int = entity.transform.position_x + direction.value[0]
         y: int = entity.transform.position_y + direction.value[1]
-
-        if not self.in_boundaries(x, y) or self.grid[x][y].is_occupied:
-            return 1.0
-        return 0.0
-
-
-
-    def move_relative(self, entity: 'Entity', direction: Direction) -> None:
-        current_direction = entity.transform.direction
-        relative_direction = self.get_relative_direction(current_direction, direction)
-        self.move(entity, relative_direction, direction)
+        return not self.in_boundaries(x, y) or self.grid[x][y].is_occupied
 
     
     def get_relative_direction(self, current_direction: Direction, relative_direction: Direction) -> Direction:

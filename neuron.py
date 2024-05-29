@@ -47,17 +47,15 @@ class Neuron:
     
     def execute(self, entity: Optional[Entity] = None) -> Tuple[Callable | None, float]:
         if self.type == NeuronType.INPUT:
-            if self.input_func is None:
-                raise Exception('None excaption')
-            neuron_output = self.input_func(entity)
+            neuron_output = self.input_func(entity, entity.grid, entity.simulation)
             self.output = neuron_output
 
 
         elif self.type == NeuronType.INTERNAL:
             input_neurons_sum: Union[float, int] = 0
             for input_neuron in self.input_neurons:
-                # if input_neuron.output is None:
-                #     raise Exception('None exception')
+                if input_neuron.output is None:
+                    raise Exception('None exception')
                 input_neurons_sum += input_neuron.output * input_neuron.weights[self]
 
             neuron_output = tanh(input_neurons_sum)
@@ -133,7 +131,7 @@ class Neuron:
         return visit(start, visited, rec_stack)
 
     @staticmethod
-    def sort(neurons: List['Neuron']) -> List['Neuron']:
+    def sort(neurons: List['Neuron']):
         input_counts = {neuron: len(neuron.input_neurons) for neuron in neurons}
 
         sorted_neurons: List['Neuron'] = []

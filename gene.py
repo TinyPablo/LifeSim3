@@ -1,5 +1,5 @@
 import random
-from typing import Optional, Self
+from typing import Optional
 from connection import ConnectionTipType, ConnectionEndType
 
 

@@ -1,5 +1,7 @@
+from ast import Tuple
 import random
 from typing import List, Optional, TYPE_CHECKING
+from gene import Gene
 from simulation_settings import settings
 from transform import Transform
 from genome import Genome
@@ -7,9 +9,10 @@ from genome import Genome
 
 if TYPE_CHECKING:
     from grid import Grid
+    from simulation import Simulation
 
 class Entity:
-    def __init__(self, genome: 'Genome') -> None:
+    def __init__(self, genome: 'Genome', simulation: 'Simulation', grid: 'Grid') -> None:
         from brain import Brain
 
         self.brain: 'Brain' = Brain(genome, self)
@@ -18,7 +21,9 @@ class Entity:
 
         self.dead: bool = False
 
-        self.grid: Optional['Grid'] = None
+        self.simulation: 'Simulation' = simulation
+        self.grid: 'Grid' = grid
+
 
     def __str__(self) -> str:
         return 'E'
@@ -26,36 +31,30 @@ class Entity:
     def __repr__(self) -> str:
         return self.__str__()
     
+    @staticmethod
+    def int_to_color(n: int) -> tuple[int, int, int]:
+        r_bits = (n >> 22) & 0x3FF
+        g_bits = (n >> 12) & 0x3FF
+        b_bits = (n >> 2) & 0x3FF
+        
+        r = int(r_bits / 0x3FF * 255)
+        g = int(g_bits / 0x3FF * 255)
+        b = int(b_bits / 0x3FF * 255)
+        
+        return r, g, b
+
     @property
-    def age(self) -> float:
-        if self.grid is None:
-            raise Exception('None error')
-        return self.grid.simulation.current_step / settings.steps_per_generation
-    
-    @property
-    def distance_to_north(self) -> float:
-        return self.transform.position_y / settings.grid_height
-    
-    @property
-    def distance_to_south(self) -> float:
-        return 1 - (self.transform.position_y / settings.grid_height)
-    
-    @property
-    def distance_to_east(self) -> float:
-        return self.transform.position_x / settings.grid_width
-    
-    @property
-    def distance_to_west(self) -> float:
-        return 1 - (self.transform.position_x / settings.grid_width)
+    def color(self) -> tuple[int, int, int]:
+        genes: List[Gene] = self.brain.genome.genes
+        avg_gene: int = int(sum([int(g) for g in genes]) / len(genes))
+        return Entity.int_to_color(avg_gene)
+
 
     def die(self) -> None:
         if self.grid is None:
             raise Exception('None exception')
         self.grid.remove_entity(self.transform.position_x, self.transform.position_y)
         self.dead = True
-
-        self.transform = Transform()
-        self.grid = None
 
     def try_mutate(self, percent_chance: float) -> bool:
         if random.uniform(0.0, 100.0) < percent_chance:
