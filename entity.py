@@ -54,15 +54,6 @@ class Entity:
         self.grid.remove_entity(self.transform.position_x, self.transform.position_y)
         self.dead = True
 
-    def try_mutate(self, percent_chance: float) -> bool:
-        if random.uniform(0.0, 100.0) < percent_chance:
-            self.mutate()
-            return True
-        return False
-
-    def mutate(self) -> None:
-        self.brain.mutate()
-
     def set_position(self, x: int, y: int) -> None:        
         self.transform.position_x = x
         self.transform.position_y = y

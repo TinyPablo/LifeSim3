@@ -1,6 +1,9 @@
 import os
 import random
+import threading
 from typing import Optional, List, TYPE_CHECKING
+import cv2
+import numpy as np
 from cell import Cell
 from direction import Direction
 from simulation_settings import settings
@@ -70,24 +73,61 @@ class Grid:
         if cell.is_entity:
             self.grid[x][y].reset()
 
-    def render(self, GEN: int, STEP: int) -> None:
-        path = f'{settings.simulation_directory}/{settings.seed}/{GEN}'
-        os.makedirs(path, exist_ok=True)
+    def get_picture(self) -> List[List[tuple[int, int, int]]]:
+        return [
+            [
+                (cell.object.color if cell.is_entity else (255, 255, 255))
+                for cell in row
+            ]
+            for row in self.grid
+        ]
+
+
+    @staticmethod
+    def save_video(pictures: List[List[tuple[int, int, int]]], generation: int, survival_rate: float) -> None:
+        def save() -> None:
+            path = f'{settings.simulation_directory}/{settings.seed}'
+            os.makedirs(path, exist_ok=True)
+            video_path = f'{path}/{generation}-{survival_rate:.2f}.avi'
+            
+            upscale_factor = 4
+            original_height, original_width = len(pictures[0]), len(pictures[0][0])
+            height, width = original_height * upscale_factor, original_width * upscale_factor
+            
+            fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+            video = cv2.VideoWriter(video_path, fourcc, 30, (width, height), isColor=True)
+            
+            for picture in pictures:
+                frame = np.array(picture, dtype=np.uint8)
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                
+                upscaled_frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_NEAREST)
+                video.write(upscaled_frame)
+            
+            video.release()
         
-        full_path = f'{path}/{STEP}.png'
+        threading.Thread(target=save).start()
+
+     
+
+    # def render(self, GEN: int, STEP: int) -> None:
+    #     path = f'{settings.simulation_directory}/{settings.seed}/{GEN}'
+    #     os.makedirs(path, exist_ok=True)
+
+    #     full_path = f'{path}/{STEP}.png'
         
-        img = Image.new('RGB', (self.width, self.height), "white")
-        pixels = img.load()
+    #     img = Image.new('RGB', (self.width, self.height), "white")
+    #     pixels = img.load()
         
-        for y in range(self.height):
-            for x in range(self.width):
-                cell = self.grid[x][y]
-                if cell.is_entity:
-                    pixels[x, y] = cell.object.color
-                elif not cell.is_occupied:
-                    pixels[x, y] = (255, 255, 255)
+    #     for y in range(self.height):
+    #         for x in range(self.width):
+    #             cell = self.grid[x][y]
+    #             if cell.is_entity:
+    #                 pixels[x, y] = cell.object.color
+    #             elif not cell.is_occupied:
+    #                 pixels[x, y] = (255, 255, 255)
         
-        img.save(full_path)
+    #     img.save(full_path)
 
     def move(self, entity: 'Entity', direction: Direction, absolute_direction: Optional[Direction] = None) -> None:
         x: int = entity.transform.position_x

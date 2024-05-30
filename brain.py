@@ -8,9 +8,9 @@ from neuron_type import NeuronType
 from input_neurons import get_fresh_input_neurons
 from output_neurons import get_fresh_output_neurons
 from internal_neurons import get_fresh_internal_neurons
+from entity import Entity
 
-if TYPE_CHECKING:
-    from entity import Entity
+# if TYPE_CHECKING:
 
 class Brain:
     def __init__(self, genome: Genome, entity: 'Entity') -> None:
@@ -26,8 +26,6 @@ class Brain:
             neuron.refresh()
 
     def connect_neurons(self) -> None:
-        if self.genome.genes is None:
-            raise Exception('Genes is None')
         genes: List[Gene] = self.genome.genes
 
         for gene in genes:
@@ -89,6 +87,3 @@ class Brain:
     def process(self) -> None:
         self.refresh_neurons()
         self.process_brain()
-    
-    def mutate(self) -> None:
-        self.genome.mutate()

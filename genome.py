@@ -1,6 +1,7 @@
 import random
 from typing import List, Optional
 from gene import Gene
+from simulation_settings import settings
 
 
 class Genome:
@@ -24,36 +25,32 @@ class Genome:
     
     def __iter__(self):
         return iter(self.genes)
-    
-    def mutate(self) -> None:
-        if self.genes is None:
-            raise Exception('None exception')
-        random.choice(self.genes).flip_random_bit()
 
     def crossover(genome_a: 'Genome', genome_b: 'Genome') -> 'Genome':
-        if genome_a.genes is None or genome_b.genes is None:
-            raise Exception('None exeption')
         half_len_a = len(genome_a.genes) // 2
         half_len_b = len(genome_b.genes) // 2
 
-        use_first_half_a = bool(random.randint(0, 1))
-        use_first_half_b = bool(random.randint(0, 1))
+        half_a = random.sample(genome_a.genes, half_len_a)    
+        half_b = random.sample(genome_b.genes, half_len_b)
+        
+        genes: list[Gene] = half_a + half_b
 
-        half_a = genome_a.genes[:half_len_a] if use_first_half_a else genome_a.genes[half_len_a:]
-        half_b = genome_b.genes[:half_len_b] if use_first_half_b else genome_b.genes[half_len_b:]
+        for gene in genes:
+            gene.try_mutate(settings.gene_mutation_chance)
 
-        return Genome(genes=half_a + half_b)
+        return Genome(genes=genes)
+    
+    # def crossover(genome_a: 'Genome', genome_b: 'Genome') -> 'Genome':
+    #     half_len_a = len(genome_a.genes) // 2
+    #     half_len_b = len(genome_b.genes) // 2
+
+    #     use_first_half_a = bool(random.randint(0, 1))
+    #     use_first_half_b = bool(random.randint(0, 1))
+
+    #     half_a = genome_a.genes[:half_len_a] if use_first_half_a else genome_a.genes[half_len_a:]
+    #     half_b = genome_b.genes[:half_len_b] if use_first_half_b else genome_b.genes[half_len_b:]
+
+    #     genes: list[Gene] = half_a + half_b
 
 
-def main() -> None:
-    from genome import Genome
-    g1, g2 = Genome(2), Genome(2)
-    print(g1, '\n')
-    print(g2, '\n')
-
-    g3 = Genome.crossover(g1, g2)
-    print(g3, '\n')
-
-
-if __name__ == '__main__':
-    main()
+    #     return Genome(genes=genes)

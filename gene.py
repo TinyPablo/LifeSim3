@@ -64,6 +64,10 @@ class Gene:
         n: int = self.gene & 0xFFFF
         return n / 8192 - 4
     
+    def try_mutate(self, percent_chance: float):
+        if random.uniform(0.0, 100.0) < percent_chance:
+            self.flip_random_bit()
+
     def flip_random_bit(self) -> None:
         bit_position = random.randint(0, 31)
         mask = 1 << bit_position

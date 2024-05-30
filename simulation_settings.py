@@ -5,21 +5,20 @@ class SimulationSettings:
     def __init__(self):
         self.simulation_directory = './simulations'
 
-        self.grid_width = 34
-        self.grid_height = 34
+        self.grid_width = 128
+        self.grid_height = 128
 
-        self.mutation_chance = .1
+        self.gene_mutation_chance = .01
 
         self.random_seed = True
         self.seed = 2673244385
 
-        self.steps_per_generation = 80
-        self.max_generation_count = 1_000_000_000
+        self.steps_per_generation = 300
 
-        self.max_entity_count = 256
+        self.max_entity_count = 2000
 
-        self.brain_size = 16
-        self.max_internal_neurons = 2
+        self.brain_size = 32
+        self.max_internal_neurons = 8
 
         self.initialize_seed()
         self.save_settings()
@@ -40,11 +39,10 @@ class SimulationSettings:
             file.write(f'{self.max_internal_neurons = }\n')
             file.write(f'{self.grid_width = }\n')
             file.write(f'{self.grid_height = }\n')
-            file.write(f'{self.mutation_chance = }\n')
+            file.write(f'{self.gene_mutation_chance = }\n')
             file.write(f'{self.random_seed = }\n')
             file.write(f'{self.seed = }\n')
             file.write(f'{self.steps_per_generation = }\n')
-            file.write(f'{self.max_generation_count = }\n')
             file.write(f'{self.max_entity_count = }\n')
             file.write(f'{self.brain_size = }\n')
 
