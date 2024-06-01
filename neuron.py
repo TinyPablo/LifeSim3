@@ -39,30 +39,13 @@ class Neuron:
         output_names: List[str] = [neuron.name for neuron in self.output_neurons]
         return f'{self.name} {input_names} {output_names}'
     
-    def execute(self, entity: Optional[Entity] = None) -> Tuple[Callable | None, float]:
-        if self.type == NeuronType.INPUT:
-            neuron_output = self.input_func(entity, entity.grid, entity.simulation)
-            self.output = neuron_output
+    def execute_as_input_neuron(self, entity: Entity) -> None:
+        neuron_output = self.input_func(entity, entity.grid, entity.simulation)
+        self.output = neuron_output
 
-
-        elif self.type == NeuronType.INTERNAL:
-            input_neurons_sum: Union[float, int] = 0
-            for input_neuron in self.input_neurons:
-                if input_neuron.output is None:
-                    raise Exception('None exception')
-                input_neurons_sum += input_neuron.output * input_neuron.weights[self]
-
+    def execute_as_output_neuron(self) -> None:
+            input_neurons_sum = sum([n.output * n.weights[self] for n in self.input_neurons])
             neuron_output = tanh(input_neurons_sum)
-            self.output = neuron_output
-            
-
-        elif self.type == NeuronType.OUTPUT:
-            input_neurons_sum = 0
-            for input_neuron in self.input_neurons:
-                input_neurons_sum += input_neuron.output * input_neuron.weights[self]
-            
-            neuron_output = tanh(input_neurons_sum)
-
             neuron_action = None
             
             if neuron_output > 0:
@@ -73,7 +56,11 @@ class Neuron:
             action_chance: float = abs(neuron_output)
 
             return neuron_action, action_chance
-        return lambda: None, 0.0
+
+    def execute_as_internal_neuron(self) -> None:
+            input_neurons_sum = sum([n.output * n.weights[self] for n in self.input_neurons])
+            neuron_output = tanh(input_neurons_sum)
+            self.output = neuron_output
     
     @staticmethod
     def connect_neurons(input_neuron: 'Neuron', output_neuron: 'Neuron', connection_weight: float) -> None:
@@ -151,18 +138,3 @@ class Neuron:
         for neuron in neurons:
             if not (neuron.input_neurons or neuron.output_neurons):
                 neuron.disable()
-    
-    @staticmethod
-    def create_neurons(num_input: int, num_internal: int, num_output: int) -> List['Neuron']:
-        neurons: List['Neuron'] = []
-
-        for i in range(1, num_input + 1):
-            neurons.append(Neuron(f'S{i}', NeuronType.INPUT))
-
-        for i in range(1, num_internal + 1):
-            neurons.append(Neuron(f'I{i}', NeuronType.INTERNAL))
-
-        for i in range(1, num_output + 1):
-            neurons.append(Neuron(f'A{i}', NeuronType.OUTPUT))
-
-        return neurons

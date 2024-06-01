@@ -6,6 +6,19 @@ from simulation_settings import settings
 from grid import Grid
 from entity import Entity
 from simulation_settings import settings
+import concurrent.futures
+from functools import wraps
+
+def timeit(method):
+    @wraps(method)
+    def timed(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = method(*args, **kwargs)
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        print(f'({elapsed_time:.10f})')
+        return result
+    return timed
 
 class Simulation:
     def __init__(self) -> None:
@@ -73,7 +86,6 @@ class Simulation:
 
         print(f'simulation ended | SEED: {settings.seed}')
 
-
     def populate(self) -> None:
         self.entities = [Entity(Genome(settings.brain_size), self, self.grid) for _ in range(settings.max_entity_count)]
         for entity in self.entities:
@@ -87,14 +99,16 @@ class Simulation:
     def selection_condition(self, entity: Entity) -> bool:
         x: int = entity.transform.position_x
         y: int = entity.transform.position_y
+        w: int = settings.grid_width
+        h: int = settings.grid_height
 
-        return ( (settings.grid_width * 1/5) > x)
-        # or x > (settings.grid_width * 4/5) ) 
+        return ((w * 2/3) > x > (w * 1/3)) and ((h * 2/3) > y > (h * 1/3))
 
     def do_natural_selection(self) -> None:
         for entity in self.entities:
             if not self.selection_condition(entity):
                 entity.die()
+
 
     def reproduce(self) -> None:
         parents: List[Entity] = [e for e in self.entities if not e.dead]

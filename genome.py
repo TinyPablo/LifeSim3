@@ -1,4 +1,5 @@
 import random
+import time
 from typing import List, Optional
 from gene import Gene
 from simulation_settings import settings
@@ -30,8 +31,8 @@ class Genome:
         half_len_a = len(genome_a.genes) // 2
         half_len_b = len(genome_b.genes) // 2
 
-        half_a = random.sample(genome_a.genes, half_len_a)    
-        half_b = random.sample(genome_b.genes, half_len_b)
+        half_a = genome_a.genes[half_len_a:]
+        half_b = genome_b.genes[half_len_b:]
         
         genes: list[Gene] = half_a + half_b
 

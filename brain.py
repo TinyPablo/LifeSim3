@@ -1,29 +1,35 @@
-import time
-from typing import Callable, List, TYPE_CHECKING, Optional
+from typing import Callable, List, Optional
 from connection import ConnectionEndType, ConnectionTipType
 from gene import Gene
 from genome import Genome
 from neuron import Neuron
 from neuron_type import NeuronType
-from input_neurons import get_fresh_input_neurons
-from output_neurons import get_fresh_output_neurons
-from internal_neurons import get_fresh_internal_neurons
+from neurons import get_fresh_neurons
 from entity import Entity
-
-# if TYPE_CHECKING:
 
 class Brain:
     def __init__(self, genome: Genome, entity: 'Entity') -> None:
         self.genome: Genome = genome
         self.entity: 'Entity' = entity
 
-        self.input_neurons: list[Neuron] = get_fresh_input_neurons()
-        self.output_neurons: list[Neuron] = get_fresh_output_neurons()
-        self.internal_neurons: list[Neuron] = get_fresh_internal_neurons()
+        self.neurons: list[Neuron] = get_fresh_neurons()
+
 
     def refresh_neurons(self) -> None:
-        for neuron in self.input_neurons + self.output_neurons + self.internal_neurons:
+        for neuron in self.neurons:
             neuron.refresh()
+
+    @property
+    def input_neurons(self) -> List[Neuron]:
+        return [n for n in self.neurons if n.type == NeuronType.INPUT]
+    
+    @property
+    def output_neurons(self) -> List[Neuron]:
+        return [n for n in self.neurons if n.type == NeuronType.OUTPUT]
+    
+    @property
+    def internal_neurons(self) -> List[Neuron]:
+        return [n for n in self.neurons if n.type == NeuronType.INTERNAL]
 
     def connect_neurons(self) -> None:
         genes: List[Gene] = self.genome.genes
@@ -55,34 +61,34 @@ class Brain:
                 pass
 
     def process_brain(self) -> None:
-        neurons: List[Neuron] = self.input_neurons + self.output_neurons + self.internal_neurons
-        Neuron.sort(neurons)
-        Neuron.filter(neurons)
-
         final_action: Optional[Callable] = None
         final_action_chance: float = float('-inf')
 
-        for n in neurons:
+        for n in self.neurons:
             if n.disabled:
                 continue
 
             if n.type == NeuronType.INPUT:
-                n.execute(self.entity)
+                n.execute_as_input_neuron(self.entity)
 
             elif n.type == NeuronType.OUTPUT:
-                neuron_action, action_chance = n.execute()
+                neuron_action, action_chance = n.execute_as_output_neuron()
                 if action_chance > final_action_chance and neuron_action is not None:
                     final_action = neuron_action
                     final_action_chance = action_chance
+                
+                    if final_action is not None:
+                        final_action(self.entity, self.entity.grid, self.entity.simulation)
                     
             elif n.type == NeuronType.INTERNAL:
-                n.execute()
+                n.execute_as_internal_neuron()
                 
-        if final_action is not None:
-            final_action(self.entity, self.entity.grid, self.entity.simulation)
+        
 
     def init(self) -> None:
         self.connect_neurons()
+        Neuron.sort(self.neurons)
+        Neuron.filter(self.neurons)
 
     def process(self) -> None:
         self.refresh_neurons()
