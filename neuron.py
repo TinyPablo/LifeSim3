@@ -26,10 +26,8 @@ class Neuron:
         self.output: Optional[float] = None 
         self.disabled: bool = False
 
-    def refresh(self) -> None:
-
-        self.output = None
-        self.disabled = False
+    # def refresh(self) -> None:
+    #     self.disabled = False
 
     def disable(self) -> None:
         self.disabled = True
@@ -43,7 +41,7 @@ class Neuron:
         neuron_output = self.input_func(entity, entity.grid, entity.simulation)
         self.output = neuron_output
 
-    def execute_as_output_neuron(self) -> None:
+    def execute_as_output_neuron(self) -> tuple[Callable, float]:
             input_neurons_sum = sum([n.output * n.weights[self] for n in self.input_neurons])
             neuron_output = tanh(input_neurons_sum)
             neuron_action = None

@@ -5,20 +5,20 @@ class SimulationSettings:
     def __init__(self):
         self.simulation_directory = './simulations'
 
-        self.grid_width = 256
-        self.grid_height = 256
+        self.grid_width = 128
+        self.grid_height = 128
 
-        self.gene_mutation_chance = .01
+        self.gene_mutation_chance = .1
 
-        self.random_seed = True
-        self.seed = 2673244385
+        self.random_seed = False
+        self.seed = 0
 
         self.steps_per_generation = 300
+        self.max_generations = 2
 
-        self.max_entity_count = 6000
-
-        self.brain_size = 24
-        self.max_internal_neurons = 6
+        self.max_entity_count = 3000
+        self.brain_size = 16
+        self.max_internal_neurons = 4
 
         self.initialize_seed()
         self.save_settings()

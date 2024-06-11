@@ -9,17 +9,6 @@ from neuron import Neuron
 from neuron_type import NeuronType
 from simulation import Simulation
 from simulation_settings import settings
-from copy import deepcopy
-from typing import List
-from direction import Direction
-from entity import Entity
-from grid import Grid
-from neuron import Neuron
-from neuron_type import NeuronType
-from simulation import Simulation
-from typing import List
-from neuron import Neuron
-
 
 
 if TYPE_CHECKING:
@@ -113,11 +102,14 @@ def move_random(entity: Entity, grid: Grid, simulation: Simulation):
 def stay_still(entity: Entity, grid: Grid, simulation: Simulation):
     pass
 
+def kys(entity: Entity, grid: Grid, simulation: Simulation):
+    entity.die()
+
 def kill(entity: Entity, grid: Grid, simulation: Simulation):
     x: int = entity.transform.next_x
     y: int = entity.transform.next_y
     if grid.in_boundaries(x, y):
-        if grid.grid[x][y].is_entity:
+        if type(grid.grid[x][y]) == Entity:
             grid.grid[x][y].object.die()
 
 
@@ -149,6 +141,7 @@ output_neurons: List[Neuron] = [
     Neuron('move right-left', NeuronType.OUTPUT, output_func_a=move_right, output_func_b=move_left),
     Neuron('move random', NeuronType.OUTPUT, output_func_a=move_random),
     Neuron('stay still', NeuronType.OUTPUT, output_func_a=stay_still),
+    # Neuron('kys', NeuronType.OUTPUT, output_func_a=kys),
     # Neuron('kill', NeuronType.OUTPUT, output_func_a=kill),
 ]
 

@@ -1,24 +1,13 @@
 import random
-import time
 from typing import List
 from genome import Genome
 from simulation_settings import settings
 from grid import Grid
 from entity import Entity
 from simulation_settings import settings
-import concurrent.futures
 from functools import wraps
 
-def timeit(method):
-    @wraps(method)
-    def timed(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = method(*args, **kwargs)
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
-        print(f'({elapsed_time:.10f})')
-        return result
-    return timed
+
 
 class Simulation:
     def __init__(self) -> None:
@@ -46,19 +35,17 @@ class Simulation:
         print(info, end='', flush=True)
 
     def generation_loop(self) -> None:
+        
         self.current_step = 1
 
         for entity in self.entities:
             entity.brain.init()
 
-        
-        
-        pictures: List[List[tuple[int, int, int]]] = []
+        pictures: List[List[List[tuple[int, int, int]]]] = []
 
         
-
+        
         while settings.steps_per_generation >= self.current_step and not self.simulation_ended:
-
             self.print_info()
             
             for entity in self.entities:
@@ -66,8 +53,6 @@ class Simulation:
 
             pictures.append(self.grid.get_picture())
             self.current_step += 1
-        
-        
     
         self.on_generation_end(pictures)
 
@@ -80,7 +65,7 @@ class Simulation:
     def simulation_loop(self) -> None:
         self.current_generation = 1
 
-        while not self.simulation_ended:
+        while not self.simulation_ended and self.current_generation < (settings.max_generations + 1):
             self.generation_loop()
             self.current_generation += 1
 
@@ -91,6 +76,7 @@ class Simulation:
         for entity in self.entities:
             self.grid.deploy_entity_randomly(entity)
         
+
     def start(self) -> None:
         self.populate()
         self.simulation_loop()
@@ -102,7 +88,7 @@ class Simulation:
         w: int = settings.grid_width
         h: int = settings.grid_height
 
-        return ((w * 2/3) > x > (w * 1/3)) and ((h * 2/3) > y > (h * 1/3))
+        return w/2 > x and h/2 > y
 
     def do_natural_selection(self) -> None:
         for entity in self.entities:
@@ -114,7 +100,7 @@ class Simulation:
         parents: List[Entity] = [e for e in self.entities if not e.dead]
         new_entities: List[Entity] = []
 
-        self.survival_rate = len(parents) / settings.max_entity_count * 100
+        self.survival_rate = len(parents) / len(self.entities) * 100
 
         if len(parents) < 2:
             print("population went extinct")

@@ -1,4 +1,5 @@
-from typing import Callable, List, Optional
+import random
+from typing import Callable, List
 from connection import ConnectionEndType, ConnectionTipType
 from gene import Gene
 from genome import Genome
@@ -14,11 +15,6 @@ class Brain:
 
         self.neurons: list[Neuron] = get_fresh_neurons()
 
-
-    def refresh_neurons(self) -> None:
-        for neuron in self.neurons:
-            neuron.refresh()
-
     @property
     def input_neurons(self) -> List[Neuron]:
         return [n for n in self.neurons if n.type == NeuronType.INPUT]
@@ -31,12 +27,16 @@ class Brain:
     def internal_neurons(self) -> List[Neuron]:
         return [n for n in self.neurons if n.type == NeuronType.INTERNAL]
 
+    # def refresh_neurons(self) -> None:
+    #     for neuron in self.neurons:
+    #         neuron.refresh()
+
     def connect_neurons(self) -> None:
         genes: List[Gene] = self.genome.genes
 
         for gene in genes:
-            input_neuron_list: Optional[List[Neuron]] = None
-            output_neuron_list: Optional[List[Neuron]] = None
+            input_neuron_list: List[Neuron] = list()
+            output_neuron_list: List[Neuron] = list()
 
             if gene.conn_tip_neuron_type == ConnectionTipType.INPUT:
                 input_neuron_list = self.input_neurons
@@ -60,8 +60,13 @@ class Brain:
                 # print(f'Reason: {e}')
                 pass
 
-    def process_brain(self) -> None:
-        final_action: Optional[Callable] = None
+    def init(self) -> None:
+        self.connect_neurons()
+        Neuron.sort(self.neurons)
+        Neuron.filter(self.neurons)
+
+    def process(self) -> None:
+        final_action: Callable = lambda: None
         final_action_chance: float = float('-inf')
 
         for n in self.neurons:
@@ -78,18 +83,8 @@ class Brain:
                     final_action_chance = action_chance
                 
                     if final_action is not None:
-                        final_action(self.entity, self.entity.grid, self.entity.simulation)
+                        if random.uniform(0.0, 1.0) < action_chance:
+                            final_action(self.entity, self.entity.grid, self.entity.simulation)
                     
             elif n.type == NeuronType.INTERNAL:
                 n.execute_as_internal_neuron()
-                
-        
-
-    def init(self) -> None:
-        self.connect_neurons()
-        Neuron.sort(self.neurons)
-        Neuron.filter(self.neurons)
-
-    def process(self) -> None:
-        self.refresh_neurons()
-        self.process_brain()

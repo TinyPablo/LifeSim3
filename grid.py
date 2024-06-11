@@ -142,13 +142,13 @@ class Grid:
     def move_relative(self, entity: 'Entity', direction: Direction) -> None:
         current_direction = entity.transform.direction
         relative_direction = self.get_relative_direction(current_direction, direction)
-        self.move(entity, direction, relative_direction)
+        self.move(entity, relative_direction, relative_direction)
 
     def in_boundaries(self, x: int, y: int) -> bool:
         return 0 <= x < self.width and 0 <= y < self.height
 
 
-    def blockage_in_direction(self, entity: 'Entity', direction: Direction) -> float:
+    def blockage_in_direction(self, entity: 'Entity', direction: Direction) -> bool:
         x: int = entity.transform.next_x
         y: int = entity.transform.next_y
         return not self.in_boundaries(x, y) or self.grid[x][y].is_occupied
@@ -156,70 +156,77 @@ class Grid:
     
     def get_relative_direction(self, current_direction: Direction, relative_direction: Direction) -> Direction:
         direction_mapping = {
-            (Direction.UP, Direction.UP): Direction.UP,
-            (Direction.UP, Direction.DOWN): Direction.DOWN,
-            (Direction.UP, Direction.LEFT): Direction.LEFT,
-            (Direction.UP, Direction.RIGHT): Direction.RIGHT,
-            (Direction.UP, Direction.UP_LEFT): Direction.UP_LEFT,
-            (Direction.UP, Direction.UP_RIGHT): Direction.UP_RIGHT,
-            (Direction.UP, Direction.DOWN_LEFT): Direction.DOWN_LEFT,
-            (Direction.UP, Direction.DOWN_RIGHT): Direction.DOWN_RIGHT,
-            (Direction.DOWN, Direction.UP): Direction.DOWN,
-            (Direction.DOWN, Direction.DOWN): Direction.UP,
-            (Direction.DOWN, Direction.LEFT): Direction.RIGHT,
-            (Direction.DOWN, Direction.RIGHT): Direction.LEFT,
-            (Direction.DOWN, Direction.UP_LEFT): Direction.DOWN_RIGHT,
-            (Direction.DOWN, Direction.UP_RIGHT): Direction.DOWN_LEFT,
-            (Direction.DOWN, Direction.DOWN_LEFT): Direction.UP_RIGHT,
-            (Direction.DOWN, Direction.DOWN_RIGHT): Direction.UP_LEFT,
-            (Direction.LEFT, Direction.UP): Direction.LEFT,
-            (Direction.LEFT, Direction.DOWN): Direction.RIGHT,
-            (Direction.LEFT, Direction.LEFT): Direction.DOWN,
-            (Direction.LEFT, Direction.RIGHT): Direction.UP,
-            (Direction.LEFT, Direction.UP_LEFT): Direction.DOWN_LEFT,
-            (Direction.LEFT, Direction.UP_RIGHT): Direction.UP_RIGHT,
-            (Direction.LEFT, Direction.DOWN_LEFT): Direction.UP_LEFT,
-            (Direction.LEFT, Direction.DOWN_RIGHT): Direction.DOWN_RIGHT,
-            (Direction.RIGHT, Direction.UP): Direction.RIGHT,
-            (Direction.RIGHT, Direction.DOWN): Direction.LEFT,
-            (Direction.RIGHT, Direction.LEFT): Direction.UP,
-            (Direction.RIGHT, Direction.RIGHT): Direction.DOWN,
-            (Direction.RIGHT, Direction.UP_LEFT): Direction.UP_RIGHT,
-            (Direction.RIGHT, Direction.UP_RIGHT): Direction.DOWN_LEFT,
-            (Direction.RIGHT, Direction.DOWN_LEFT): Direction.DOWN_RIGHT,
-            (Direction.RIGHT, Direction.DOWN_RIGHT): Direction.UP_LEFT,
-            (Direction.UP_LEFT, Direction.UP): Direction.UP_LEFT,
-            (Direction.UP_LEFT, Direction.DOWN): Direction.DOWN_RIGHT,
-            (Direction.UP_LEFT, Direction.LEFT): Direction.UP,
-            (Direction.UP_LEFT, Direction.RIGHT): Direction.DOWN,
-            (Direction.UP_LEFT, Direction.UP_LEFT): Direction.LEFT,
-            (Direction.UP_LEFT, Direction.UP_RIGHT): Direction.DOWN_LEFT,
-            (Direction.UP_LEFT, Direction.DOWN_LEFT): Direction.UP_RIGHT,
-            (Direction.UP_LEFT, Direction.DOWN_RIGHT): Direction.RIGHT,
-            (Direction.UP_RIGHT, Direction.UP): Direction.UP_RIGHT,
-            (Direction.UP_RIGHT, Direction.DOWN): Direction.DOWN_LEFT,
-            (Direction.UP_RIGHT, Direction.LEFT): Direction.DOWN,
-            (Direction.UP_RIGHT, Direction.RIGHT): Direction.UP,
-            (Direction.UP_RIGHT, Direction.UP_LEFT): Direction.DOWN_RIGHT,
-            (Direction.UP_RIGHT, Direction.UP_RIGHT): Direction.RIGHT,
-            (Direction.UP_RIGHT, Direction.DOWN_LEFT): Direction.LEFT,
-            (Direction.UP_RIGHT, Direction.DOWN_RIGHT): Direction.UP_LEFT,
-            (Direction.DOWN_LEFT, Direction.UP): Direction.DOWN_LEFT,
-            (Direction.DOWN_LEFT, Direction.DOWN): Direction.UP_RIGHT,
-            (Direction.DOWN_LEFT, Direction.LEFT): Direction.UP,
-            (Direction.DOWN_LEFT, Direction.RIGHT): Direction.DOWN,
-            (Direction.DOWN_LEFT, Direction.UP_LEFT): Direction.RIGHT,
-            (Direction.DOWN_LEFT, Direction.UP_RIGHT): Direction.UP_LEFT,
-            (Direction.DOWN_LEFT, Direction.DOWN_LEFT): Direction.LEFT,
-            (Direction.DOWN_LEFT, Direction.DOWN_RIGHT): Direction.DOWN_RIGHT,
-            (Direction.DOWN_RIGHT, Direction.UP): Direction.DOWN_RIGHT,
-            (Direction.DOWN_RIGHT, Direction.DOWN): Direction.UP_LEFT,
-            (Direction.DOWN_RIGHT, Direction.LEFT): Direction.DOWN,
-            (Direction.DOWN_RIGHT, Direction.RIGHT): Direction.UP,
-            (Direction.DOWN_RIGHT, Direction.UP_LEFT): Direction.LEFT,
-            (Direction.DOWN_RIGHT, Direction.UP_RIGHT): Direction.RIGHT,
-            (Direction.DOWN_RIGHT, Direction.DOWN_LEFT): Direction.DOWN_LEFT,
-            (Direction.DOWN_RIGHT, Direction.DOWN_RIGHT): Direction.UP_RIGHT,
-        }
+    (Direction.UP, Direction.UP): Direction.UP,
+    (Direction.UP, Direction.DOWN): Direction.UP,
+    (Direction.UP, Direction.LEFT): Direction.UP_LEFT,
+    (Direction.UP, Direction.RIGHT): Direction.UP_RIGHT,
+    (Direction.UP, Direction.UP_LEFT): Direction.UP_LEFT,
+    (Direction.UP, Direction.UP_RIGHT): Direction.UP_RIGHT,
+    (Direction.UP, Direction.DOWN_LEFT): Direction.LEFT,
+    (Direction.UP, Direction.DOWN_RIGHT): Direction.RIGHT,
+
+    (Direction.DOWN, Direction.UP): Direction.DOWN,
+    (Direction.DOWN, Direction.DOWN): Direction.DOWN,
+    (Direction.DOWN, Direction.LEFT): Direction.DOWN_LEFT,
+    (Direction.DOWN, Direction.RIGHT): Direction.DOWN_RIGHT,
+    (Direction.DOWN, Direction.UP_LEFT): Direction.LEFT,
+    (Direction.DOWN, Direction.UP_RIGHT): Direction.RIGHT,
+    (Direction.DOWN, Direction.DOWN_LEFT): Direction.DOWN_LEFT,
+    (Direction.DOWN, Direction.DOWN_RIGHT): Direction.DOWN_RIGHT,
+
+    (Direction.LEFT, Direction.UP): Direction.UP_LEFT,
+    (Direction.LEFT, Direction.DOWN): Direction.DOWN_LEFT,
+    (Direction.LEFT, Direction.LEFT): Direction.LEFT,
+    (Direction.LEFT, Direction.RIGHT): Direction.LEFT,
+    (Direction.LEFT, Direction.UP_LEFT): Direction.UP_LEFT,
+    (Direction.LEFT, Direction.UP_RIGHT): Direction.UP,
+    (Direction.LEFT, Direction.DOWN_LEFT): Direction.DOWN_LEFT,
+    (Direction.LEFT, Direction.DOWN_RIGHT): Direction.DOWN,
+
+    (Direction.RIGHT, Direction.UP): Direction.UP_RIGHT,
+    (Direction.RIGHT, Direction.DOWN): Direction.DOWN_RIGHT,
+    (Direction.RIGHT, Direction.LEFT): Direction.RIGHT,
+    (Direction.RIGHT, Direction.RIGHT): Direction.RIGHT,
+    (Direction.RIGHT, Direction.UP_LEFT): Direction.UP,
+    (Direction.RIGHT, Direction.UP_RIGHT): Direction.UP_RIGHT,
+    (Direction.RIGHT, Direction.DOWN_LEFT): Direction.DOWN,
+    (Direction.RIGHT, Direction.DOWN_RIGHT): Direction.DOWN_RIGHT,
+
+    (Direction.UP_LEFT, Direction.UP): Direction.UP_LEFT,
+    (Direction.UP_LEFT, Direction.DOWN): Direction.LEFT,
+    (Direction.UP_LEFT, Direction.LEFT): Direction.UP_LEFT,
+    (Direction.UP_LEFT, Direction.RIGHT): Direction.UP,
+    (Direction.UP_LEFT, Direction.UP_LEFT): Direction.UP_LEFT,
+    (Direction.UP_LEFT, Direction.UP_RIGHT): Direction.UP,
+    (Direction.UP_LEFT, Direction.DOWN_LEFT): Direction.LEFT,
+    (Direction.UP_LEFT, Direction.DOWN_RIGHT): Direction.LEFT,
+
+    (Direction.UP_RIGHT, Direction.UP): Direction.UP_RIGHT,
+    (Direction.UP_RIGHT, Direction.DOWN): Direction.RIGHT,
+    (Direction.UP_RIGHT, Direction.LEFT): Direction.UP,
+    (Direction.UP_RIGHT, Direction.RIGHT): Direction.UP_RIGHT,
+    (Direction.UP_RIGHT, Direction.UP_LEFT): Direction.UP,
+    (Direction.UP_RIGHT, Direction.UP_RIGHT): Direction.UP_RIGHT,
+    (Direction.UP_RIGHT, Direction.DOWN_LEFT): Direction.RIGHT,
+    (Direction.UP_RIGHT, Direction.DOWN_RIGHT): Direction.RIGHT,
+
+    (Direction.DOWN_LEFT, Direction.UP): Direction.LEFT,
+    (Direction.DOWN_LEFT, Direction.DOWN): Direction.DOWN_LEFT,
+    (Direction.DOWN_LEFT, Direction.LEFT): Direction.DOWN_LEFT,
+    (Direction.DOWN_LEFT, Direction.RIGHT): Direction.DOWN,
+    (Direction.DOWN_LEFT, Direction.UP_LEFT): Direction.LEFT,
+    (Direction.DOWN_LEFT, Direction.UP_RIGHT): Direction.DOWN,
+    (Direction.DOWN_LEFT, Direction.DOWN_LEFT): Direction.DOWN_LEFT,
+    (Direction.DOWN_LEFT, Direction.DOWN_RIGHT): Direction.DOWN,
+
+    (Direction.DOWN_RIGHT, Direction.UP): Direction.RIGHT,
+    (Direction.DOWN_RIGHT, Direction.DOWN): Direction.DOWN_RIGHT,
+    (Direction.DOWN_RIGHT, Direction.LEFT): Direction.DOWN,
+    (Direction.DOWN_RIGHT, Direction.RIGHT): Direction.DOWN_RIGHT,
+    (Direction.DOWN_RIGHT, Direction.UP_LEFT): Direction.DOWN,
+    (Direction.DOWN_RIGHT, Direction.UP_RIGHT): Direction.RIGHT,
+    (Direction.DOWN_RIGHT, Direction.DOWN_LEFT): Direction.DOWN,
+    (Direction.DOWN_RIGHT, Direction.DOWN_RIGHT): Direction.DOWN_RIGHT
+}
         return direction_mapping[(current_direction, relative_direction)]
 
