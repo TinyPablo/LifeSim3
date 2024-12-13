@@ -1,5 +1,3 @@
-from functools import wraps
-import time
 from simulation import Simulation 
 from utils import timeit
 
@@ -11,4 +9,5 @@ def main() -> None:
 
 
 if __name__ == '__main__':  
+    input('press enter to start the simulation')
     main()

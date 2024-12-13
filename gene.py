@@ -66,6 +66,7 @@ class Gene:
     
     def try_mutate(self, percent_chance: float):
         if random.uniform(0.0, 100.0) < percent_chance:
+            print('mutated')
             self.flip_random_bit()
 
     def flip_random_bit(self) -> None:

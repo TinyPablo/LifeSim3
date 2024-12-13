@@ -15,6 +15,10 @@ class Brain:
 
         self.neurons: list[Neuron] = get_fresh_neurons()
 
+
+    def __str__(self) -> str:
+        return '\n'.join([f'{n}' for n in self.neurons])
+
     @property
     def input_neurons(self) -> List[Neuron]:
         return [n for n in self.neurons if n.type == NeuronType.INPUT]
@@ -38,12 +42,12 @@ class Brain:
             input_neuron_list: List[Neuron] = list()
             output_neuron_list: List[Neuron] = list()
 
-            if gene.conn_tip_neuron_type == ConnectionTipType.INPUT:
+            if gene.conn_tip_neuron_type == ConnectionTipType.INPUT or not self.internal_neurons:
                 input_neuron_list = self.input_neurons
             elif gene.conn_tip_neuron_type == ConnectionTipType.INTERNAL:
                 input_neuron_list = self.internal_neurons
 
-            if gene.conn_end_neuron_type == ConnectionEndType.OUTPUT:
+            if gene.conn_end_neuron_type == ConnectionEndType.OUTPUT or not self.internal_neurons:
                 output_neuron_list = self.output_neurons
             elif gene.conn_end_neuron_type == ConnectionEndType.INTERNAL:
                 output_neuron_list = self.internal_neurons

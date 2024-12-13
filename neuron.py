@@ -37,6 +37,9 @@ class Neuron:
         output_names: List[str] = [neuron.name for neuron in self.output_neurons]
         return f'{self.name} {input_names} {output_names}'
     
+    def __repr__(self) -> str:
+        return self.__str__()
+    
     def execute_as_input_neuron(self, entity: Entity) -> None:
         neuron_output = self.input_func(entity, entity.grid, entity.simulation)
         self.output = neuron_output

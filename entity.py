@@ -1,8 +1,5 @@
-from ast import Tuple
-import random
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Tuple
 from gene import Gene
-from simulation_settings import settings
 from transform import Transform
 from genome import Genome
 
@@ -24,7 +21,6 @@ class Entity:
         self.simulation: 'Simulation' = simulation
         self.grid: 'Grid' = grid
 
-
     def __str__(self) -> str:
         return 'E'
 
@@ -32,7 +28,7 @@ class Entity:
         return self.__str__()
     
     @staticmethod
-    def int_to_color(n: int) -> tuple[int, int, int]:
+    def int_to_color(n: int) -> Tuple[int, int, int]:
         r_bits = (n >> 22) & 0x3FF
         g_bits = (n >> 12) & 0x3FF
         b_bits = (n >> 2) & 0x3FF

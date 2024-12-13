@@ -62,7 +62,7 @@ def oscilator_input(entity: Entity, grid: Grid, simulation: Simulation):
 
 
 def meets_condition_input(entity: Entity, grid: Grid, simulation: Simulation):
-    if simulation.selection_condition(entity):
+    if simulation.selection_condition(entity.transform.position_x, entity.transform.position_y):
         return 1.0
     return 0.0
     

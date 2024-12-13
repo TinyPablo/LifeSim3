@@ -1,6 +1,6 @@
 from functools import wraps
 import time
-
+from datetime import datetime
 
 def timeit(method):
     @wraps(method)
@@ -12,3 +12,7 @@ def timeit(method):
         print(f'({elapsed_time:.10f})')
         return result
     return timed
+
+def get_time_now() -> str:
+    now = datetime.now()
+    return now.strftime("%d-%m-%Y %H:%M:%S")

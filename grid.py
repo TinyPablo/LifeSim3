@@ -74,28 +74,36 @@ class Grid:
             self.grid[x][y].reset()
 
     def get_picture(self) -> List[List[tuple[int, int, int]]]:
-        return [
-            [
-                (cell.object.color if cell.is_entity else (255, 255, 255))
-                for cell in row
-            ]
-            for row in self.grid
-        ]
+        picture = []
+        for y, row in enumerate(self.grid):
+            picture_row = []
+            for x, cell in enumerate(row):
+                if cell.is_entity:
+                    color = cell.object.color
+                else:
+                    if self.simulation.selection_condition(y, x):
+                        color = (144, 238, 144)
+                    else:
+                        color = (255, 255, 255)
+                    
+                picture_row.append(color)
+            picture.append(picture_row)
+        return picture
 
 
     @staticmethod
-    def save_video(pictures: List[List[tuple[int, int, int]]], generation: int, survival_rate: float) -> None:
+    def save_video(pictures: List[List[tuple[int, int, int]]], generation: int) -> None:
         def save() -> None:
-            path = f'{settings.simulation_directory}/{settings.seed}'
+            path: str = f"{settings.simulation_directory}/videos"
             os.makedirs(path, exist_ok=True)
-            video_path = f'{path}/{generation}-{survival_rate:.2f}.avi'
+            video_path = f'{path}/gen-{generation}.avi'
             
             upscale_factor = 4
             original_height, original_width = len(pictures[0]), len(pictures[0][0])
             height, width = original_height * upscale_factor, original_width * upscale_factor
             
             fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-            video = cv2.VideoWriter(video_path, fourcc, 30, (width, height), isColor=True)
+            video = cv2.VideoWriter(video_path, fourcc, settings.video_framerate, (width, height), isColor=True)
             
             for picture in pictures:
                 frame = np.array(picture, dtype=np.uint8)
@@ -149,8 +157,8 @@ class Grid:
 
 
     def blockage_in_direction(self, entity: 'Entity', direction: Direction) -> bool:
-        x: int = entity.transform.next_x
-        y: int = entity.transform.next_y
+        x: int = entity.transform.position_x + direction.value[0]
+        y: int = entity.transform.position_y + direction.value[1]
         return not self.in_boundaries(x, y) or self.grid[x][y].is_occupied
 
     

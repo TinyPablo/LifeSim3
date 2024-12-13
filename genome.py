@@ -20,9 +20,7 @@ class Genome:
         self.genes = [Gene() for _ in range(self.size)]
 
     def __str__(self) -> str:
-        if self.genes is None:
-            raise Exception('None exception')
-        return '\n'.join([str(gene) for gene in self.genes])
+        return '\n'.join([str(g) for g in self.genes])
     
     def __iter__(self):
         return iter(self.genes)
